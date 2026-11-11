@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>· Modelo OSI y TCP/IP · Equipo 1</title>
+<style>
+:root{
+  --ink:#0b192c;
+  --muted:#334e68;
+  --line:#93c5fd;
+  --blue:#0284c7;
+  --blue-d:#034694;
+  --wash:#bae6fd;
+  --bg:#cbe4fc; /* Fondo celeste pastel mucho más presente y notorio */
+  --card:#ffffff;
+  
+  /* Colores vivos e intensos para las capas */
+  --c7:#7c3aed;
+  --c6:#0284c7;
+  --c5:#059669;
+  --c4:#d97706;
+  --c3:#dc2626;
+  --c2:#0891b2;
+  --c1:#1e3a8a;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0;
+  font-family:"Segoe UI",system-ui,sans-serif;
+  background:var(--bg);
+  color:var(--ink);
+  line-height:1.55;
+  font-size:17px;
+}
+header{
+  background: linear-gradient(135deg, #0284c7 0%, #034694 60%, #022353 100%);
+  color:#fff;
+  padding:48px 7vw 36px;
+  box-shadow: 0 6px 20px rgba(3, 70, 148, 0.3);
+}
+.kicker{margin:0 0 8px;letter-spacing:.04em;text-transform:uppercase;font-size:13px;opacity:.95;color:#e0f2fe;font-weight:700}
+header h1{margin:0 0 8px;font-size:clamp(32px,5vw,52px);font-weight:750;letter-spacing:-.02em;line-height:1.1}
+header p{margin:0;max-width:40rem;color:#e0f2fe;font-weight:500}
+nav{
+  position:sticky;top:0;z-index:2;
+  background:#ffffff;border-bottom:3px solid var(--blue);
+  padding:12px 7vw;display:flex;gap:8px 16px;flex-wrap:wrap;
+  box-shadow: 0 4px 15px rgba(2, 132, 199, 0.15);
+}
+nav a{color:var(--blue-d);text-decoration:none;font-size:15px;font-weight:700}
+nav a:hover,nav a:focus-visible{color:var(--blue);text-decoration:underline}
+main{max-width:980px;margin:0 auto;padding:28px 20px 64px}
+section{padding:22px 0 8px}
+h2{margin:0 0 12px;font-size:27px;color:var(--blue-d);font-weight:800}
+h2 span{display:block;width:45px;height:4px;background:var(--blue);margin-bottom:8px;border-radius:2px}
+h3{margin:0 0 6px;font-size:19px;color:var(--blue-d);font-weight:700}
+p{margin:0 0 12px}
+.lead{color:var(--muted);font-weight:500}
+.grid{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(240px,1fr))}
+.card{
+  background:var(--card);
+  border:2px solid var(--line);
+  border-left:6px solid var(--blue);
+  border-radius:10px;
+  padding:18px 20px;
+  box-shadow:0 4px 12px rgba(3, 70, 148, 0.08);
+}
+.card p:last-child{margin:0}
+ul{margin:8px 0 0;padding-left:18px}
+li{margin:4px 0}
+table{width:100%;border-collapse:collapse;background:#fff;font-size:15px;border-radius:10px;overflow:hidden;box-shadow:0 4px 14px rgba(3, 70, 148, 0.08);border:2px solid var(--line)}
+th,td{text-align:left;padding:12px 14px;border-bottom:1px solid var(--line)}
+th{background:#0284c7;color:#ffffff;font-weight:700;font-size:15.5px}
+tr:hover td{background:var(--wash)}
+.layout{display:grid;gap:16px;grid-template-columns:250px 1fr}
+@media (max-width:720px){.layout{grid-template-columns:1fr}}
+.stack{display:flex;flex-direction:column;gap:9px}
+.stack button,.steps button{
+  font:inherit;cursor:pointer;text-align:left;
+  border:2px solid var(--line);background:#fff;color:var(--ink);
+  padding:11px 15px;border-radius:9px;
+  font-weight:700;
+  transition: all 0.2s;
+  box-shadow:0 2px 6px rgba(0,0,0,0.04);
+}
+
+/* Colores vivos en los botones de capa */
+.stack button[data-layer="c7"]{border-left:8px solid var(--c7);color:var(--c7)}
+.stack button[data-layer="c6"]{border-left:8px solid var(--c6);color:var(--c6)}
+.stack button[data-layer="c5"]{border-left:8px solid var(--c5);color:var(--c5)}
+.stack button[data-layer="c4"]{border-left:8px solid var(--c4);color:var(--c4)}
+.stack button[data-layer="c3"]{border-left:8px solid var(--c3);color:var(--c3)}
+.stack button[data-layer="c2"]{border-left:8px solid var(--c2);color:var(--c2)}
+.stack button[data-layer="c1"]{border-left:8px solid var(--c1);color:var(--c1)}
+
+.stack button:hover{
+  transform:translateX(4px);
+  box-shadow:0 4px 10px rgba(0,0,0,0.1);
+}
+
+.stack button[aria-pressed="true"][data-layer="c7"]{background:var(--c7);color:#fff;border-color:var(--c7);box-shadow:0 4px 12px rgba(124, 58, 237, 0.4)}
+.stack button[aria-pressed="true"][data-layer="c6"]{background:var(--c6);color:#fff;border-color:var(--c6);box-shadow:0 4px 12px rgba(2, 132, 199, 0.4)}
+.stack button[aria-pressed="true"][data-layer="c5"]{background:var(--c5);color:#fff;border-color:var(--c5);box-shadow:0 4px 12px rgba(5, 150, 105, 0.4)}
+.stack button[aria-pressed="true"][data-layer="c4"]{background:var(--c4);color:#fff;border-color:var(--c4);box-shadow:0 4px 12px rgba(217, 119, 6, 0.4)}
+.stack button[aria-pressed="true"][data-layer="c3"]{background:var(--c3);color:#fff;border-color:var(--c3);box-shadow:0 4px 12px rgba(220, 38, 38, 0.4)}
+.stack button[aria-pressed="true"][data-layer="c2"]{background:var(--c2);color:#fff;border-color:var(--c2);box-shadow:0 4px 12px rgba(8, 145, 178, 0.4)}
+.stack button[aria-pressed="true"][data-layer="c1"]{background:var(--c1);color:#fff;border-color:var(--c1);box-shadow:0 4px 12px rgba(30, 58, 138, 0.4)}
+
+.panel{
+  background:#fff;
+  border:2.5px solid var(--blue);
+  border-radius:12px;
+  padding:24px 26px;
+  min-height:190px;
+  box-shadow:0 6px 18px rgba(2, 132, 199, 0.12);
+}
+.panel h3{color:var(--blue-d);font-size:22px;margin-bottom:12px}
+.band{display:grid;gap:12px}
+.band article{
+  background:#fff;
+  border:2px solid var(--line);
+  border-left:7px solid var(--blue);
+  border-radius:10px;
+  padding:16px 18px;
+  box-shadow:0 4px 12px rgba(3, 70, 148, 0.06);
+}
+.num{display:inline-block;min-width:1.6em;font-weight:800;color:var(--blue);font-size:1.15em}
+#pasos{list-style:none;margin:0;padding:0}
+#pasos li{
+  padding:14px 16px;margin-bottom:10px;
+  background:#fff;border:2px solid var(--line);border-radius:8px;color:var(--muted);
+  transition: all 0.2s;
+  box-shadow:0 2px 6px rgba(0,0,0,0.03);
+}
+#pasos li.on{
+  border-color:var(--blue);
+  color:var(--ink);
+  background:var(--wash);
+  font-weight:500;
+  box-shadow:0 4px 12px rgba(2, 132, 199, 0.18);
+  transform:translateX(5px);
+}
+#pasos strong{color:var(--blue-d);font-weight:800}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:10px}
+.steps button{
+  background:var(--blue);
+  color:#fff;
+  border-color:var(--blue);
+  font-weight:700;
+  padding:10px 18px;
+  border-radius:8px;
+}
+.steps button:hover{background:var(--blue-d)}
+.steps button.ghost{background:#fff;color:var(--blue-d);border:2px solid var(--blue-d)}
+.steps button.ghost:hover{background:var(--wash)}
+#paso-num{font-size:15px;color:var(--blue-d);font-weight:700}
+footer{
+  padding:30px 7vw 42px;
+  color:var(--muted);
+  font-size:15px;
+  font-weight:600;
+  border-top:3px solid var(--blue);
+  background:#fff;
+}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+</style>
+</head>
+<body>
+<header>
+  <h1>Modelo OSI y TCP/IP</h1>
+  <p>Equipo 1</p>
+</header>
+<nav aria-label="Contenido">
+  <a href="#redes">Redes</a>
+  <a href="#osi">Modelo OSI</a>
+  <a href="#tcp">Modelo TCP/IP</a>
+  <a href="#protocolos">Protocolos</a>
+  <a href="#relacion">Relación</a>
+  <a href="#viaje">Encapsulación</a>
+  <a href="#importancia">Importancia</a>
+</nav>
+<main>
+  
+<section id="redes">
+  <h2><span></span>Redes y protocolos</h2>
+  <div class="grid">
+    <article class="card">
+      <h3>¿Qué es una red de computadoras?</h3>
+      <p>Un conjunto de dispositivos conectados entre sí para compartir información y recursos.</p>
+    </article>
+    <article class="card">
+      <h3>¿Qué son los protocolos?</h3>
+      <p>Un conjunto de reglas que permiten la comunicación entre dispositivos. Indican cómo se debe enviar, recibir y entender la información.</p>
+    </article>
+  </div>
+  <article class="card" style="margin-top:14px">
+    <h3>¿Por qué son importantes?</h3>
+    <p>Permiten que equipos distintos intercambien información de forma correcta. Gracias a ellos podemos:</p>
+    <ul>
+      <li>Navegar por Internet.</li>
+      <li>Enviar mensajes.</li>
+      <li>Compartir archivos.</li>
+      <li>Visitar páginas web.</li>
+    </ul>
+  </article>
+</section>
+
+<section id="osi">
+  <h2><span></span>Modelo OSI</h2>
+  <p class="lead">OSI significa Open Systems Interconnection (Interconexión de Sistemas Abiertos). Es un modelo de referencia para entender cómo se comunican los dispositivos en una red. Divide la comunicación en 7 capas. Cada una tiene una función y, juntas, hacen que la información salga de un equipo, viaje por la red y llegue bien a otro. También sirve para ubicar en qué parte aparece un problema.</p>
+  <div class="layout">
+    <div class="stack" id="osi-btns">
+      <button type="button" data-layer="c7" aria-pressed="true">7 · Aplicación</button>
+      <button type="button" data-layer="c6" aria-pressed="false">6 · Presentación</button>
+      <button type="button" data-layer="c5" aria-pressed="false">5 · Sesión</button>
+      <button type="button" data-layer="c4" aria-pressed="false">4 · Transporte</button>
+      <button type="button" data-layer="c3" aria-pressed="false">3 · Red</button>
+      <button type="button" data-layer="c2" aria-pressed="false">2 · Enlace de datos</button>
+      <button type="button" data-layer="c1" aria-pressed="false">1 · Física</button>
+    </div>
+    <div>
+      <article class="panel" id="c7">
+        <h3>Capa de aplicación</h3>
+        <p>Se refiere al tipo de aplicación y a sus formas estandarizadas de hablar con los servicios de red. Es la capa con la que interactúa la persona, por ejemplo con HTTPS en el navegador o con POP3 y SMTP en el correo.</p>
+      </article>
+      <article class="panel" id="c6" hidden>
+        <h3>Capa de presentación</h3>
+        <p>Se ocupa de la sintaxis, la estructura y el formato de los datos para que las aplicaciones puedan enviarlos y leerlos. Trabaja con formatos como JSON, HTML o CSV, y también con el cifrado y la compresión.</p>
+      </article>
+      <article class="panel" id="c5" hidden>
+        <h3>Capa de sesión</h3>
+        <p>Coordina, sincroniza y administra la conexión entre dos aplicaciones. Se encarga de abrir, mantener y cerrar la sesión de comunicación.</p>
+      </article>
+      <article class="panel" id="c4" hidden>
+        <h3>Capa de transporte</h3>
+        <p>Cuida que los datos lleguen en orden, sin pérdidas ni errores, de un extremo al otro. Usa TCP, que es confiable y orientado a la conexión, y UDP, que es rápido y sin conexión, útil para streaming.</p>
+      </article>
+      <article class="panel" id="c3" hidden>
+        <h3>Capa de red</h3>
+        <p>Hace el enrutamiento, el reenvío y el direccionamiento lógico entre redes con varios nodos. Elige la ruta de los paquetes con protocolos como IPv4 e IPv6.</p>
+      </article>
+      <article class="panel" id="c2" hidden>
+        <h3>Capa de enlace de datos</h3>
+        <p>Conecta dos máquinas en una red local cuando el medio físico ya existe. Administra las tramas, el direccionamiento físico, el control de flujo y el control de errores.</p>
+      </article>
+      <article class="panel" id="c1" hidden>
+        <h3>Capa física</h3>
+        <p>Es el medio físico y las tecnologías que transmiten los datos: señales digitales y electrónicas por fibra óptica, cable de cobre o el aire.</p>
+      </article>
+    </div>
+  </div>
+</section>
+
+<section id="tcp">
+  <h2><span></span>Modelo TCP/IP</h2>
+  <p class="lead">TCP/IP es el conjunto de protocolos y el modelo que usan Internet y otras redes para que los dispositivos se comuniquen. A diferencia del OSI, agrupa el trabajo en 4 capas. Su nombre viene de dos protocolos: TCP, que ayuda a que los datos lleguen bien y en orden, e IP, que identifica los equipos y dirige los datos a su destino.</p>
+  <div class="band">
+    <article><h3><span class="num">4</span> Aplicación</h3><p>Ofrece la interfaz y los servicios de red directamente a las aplicaciones y a quien las usa.</p></article>
+    <article><h3><span class="num">3</span> Transporte</h3><p>Comunicación de extremo a extremo, con control de flujo y entrega confiable entre dispositivos.</p></article>
+    <article><h3><span class="num">2</span> Internet</h3><p>Direccionamiento lógico (IP) y enrutamiento de paquetes a través de redes distintas.</p></article>
+    <article><h3><span class="num">1</span> Acceso a la red</h3><p>Transmisión física de los datos y direccionamiento de hardware (direcciones MAC) en la red local.</p></article>
+  </div>
+</section>
+
+<section id="protocolos">
+  <h2><span></span>Protocolos importantes</h2>
+  <div class="grid">
+    <article class="card">
+      <h3>TCP</h3>
+      <p>Transmisión ordenada, confiable y orientada a la conexión. Pertenece a la capa de transporte.</p>
+    </article>
+    <article class="card">
+      <h3>UDP</h3>
+      <p>Transmisión muy rápida, sin garantías de orden ni entrega. Sirve para streaming. También es de transporte.</p>
+    </article>
+    <article class="card">
+      <h3>IP</h3>
+      <p>Base de la capa de Internet. Define las direcciones lógicas y enruta cada paquete desde el origen hasta el destino.</p>
+    </article>
+    <article class="card">
+      <h3>DNS</h3>
+      <p>La agenda de Internet: traduce un nombre como google.com a una dirección IP numérica.</p>
+    </article>
+    <article class="card">
+      <h3>HTTP / HTTPS</h3>
+      <p>El lenguaje de la web. HTTPS suma cifrado con TLS/SSL para cuidar la privacidad de los datos. Viven en la capa de aplicación.</p>
+    </article>
+  </div>
+</section>
+
+<section id="relacion">
+  <h2><span></span>Relación entre OSI y TCP/IP</h2>
+  <div class="grid">
+    <article class="card"><p>Los dos explican cómo funciona una red y cómo se conectan los equipos.</p></article>
+    <article class="card"><p>OSI es más teórico: un mapa para entender y enseñar la red paso a paso.</p></article>
+    <article class="card"><p>TCP/IP es el modelo práctico, el que realmente sostiene Internet.</p></article>
+    <article class="card"><p>Se relacionan porque TCP/IP retomó la forma en que OSI organiza la comunicación.</p></article>
+  </div>
+  <h3 style="margin-top:22px">Diferencias</h3>
+  <ul>
+    <li><strong>Capas.</strong> OSI usa 7. TCP/IP agrupa el trabajo y usa 4.</li>
+    <li><strong>Enfoque.</strong> OSI separa cada función de forma estricta. TCP/IP va más directo y se concentra en que la comunicación funcione.</li>
+    <li><strong>Origen.</strong> OSI se definió antes de tener los protocolos listos. TCP/IP se armó a partir de protocolos que ya existían y servían.</li>
+  </ul>
+  <h3 style="margin-top:22px">Equivalencia de capas</h3>
+  <table>
+    <thead><tr><th>OSI</th><th>TCP/IP</th></tr></thead>
+    <tbody>
+      <tr><td>Aplicación, presentación y sesión</td><td>Aplicación</td></tr>
+      <tr><td>Transporte</td><td>Transporte</td></tr>
+      <tr><td>Red</td><td>Internet</td></tr>
+      <tr><td>Enlace de datos y física</td><td>Acceso a la red</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section id="viaje">
+  <h2><span></span>Cómo viajan los datos</h2>
+  <p class="lead">El mensaje baja por las capas del equipo de origen, viaja por la red (cable, Wi-Fi, routers) y sube por las capas en el equipo de destino.</p>
+  <p>La encapsulación es ese descenso: en cada capa se empaqueta el mensaje y se le agrega un encabezado con lo que la red necesita para tratarlo.</p>
+  <ol id="pasos">
+    <li><strong>Datos.</strong> El mensaje original de la aplicación, por ejemplo un chat o un correo.</li>
+    <li><strong>Segmento.</strong> Se agrega el protocolo de transporte (TCP o UDP) para coordinar el envío.</li>
+    <li><strong>Paquete.</strong> Se agrega la dirección IP para saber a qué red y a qué equipo va.</li>
+    <li><strong>Trama.</strong> Se agrega la dirección MAC para el tramo local de la red.</li>
+    <li><strong>Bits.</strong> Todo se convierte en unos y ceros para viajar por la antena, el cable o la fibra.</li>
+  </ol>
+  <div class="row steps">
+    <button type="button" id="sig">Siguiente paso</button>
+    <button type="button" id="reiniciar" class="ghost">Reiniciar</button>
+    <span id="paso-num"></span>
+  </div>
+</section>
+
+<section id="importancia">
+  <h2><span></span>Por qué importan estos modelos</h2>
+  <div class="grid">
+    <article class="card"><p>Hablan un idioma común: un celular Android, una Mac y una PC con Windows pueden conectarse.</p></article>
+    <article class="card"><p>Ayudan a localizar fallas. Si se cae la conexión, se puede revisar por capa: el cable, la red o la aplicación.</p></article>
+    <article class="card"><p>Mantienen el orden cuando aparecen tecnologías o aplicaciones nuevas.</p></article>
+  </div>
+</section>
+
+</main>
+<footer>Programación web · Tema 1 · Modelo OSI/TCP · Equipo 1 · FIME, UANL</footer>
+<script>
+(function () {
+  var botones = document.querySelectorAll("#osi-btns button");
+  botones.forEach(function (b) {
+    b.addEventListener("click", function () {
+      botones.forEach(function (x) {
+        x.setAttribute("aria-pressed", x === b ? "true" : "false");
+      });
+      document.querySelectorAll(".panel").forEach(function (p) {
+        p.hidden = p.id !== b.getAttribute("data-layer");
+      });
+    });
+  });
+
+  var pasos = document.querySelectorAll("#pasos li");
+  var n = 0;
+  var etiqueta = document.getElementById("paso-num");
+  function marcar(i) {
+    n = i;
+    pasos.forEach(function (li, idx) { li.classList.toggle("on", idx <= n); });
+    etiqueta.textContent = "Paso " + (n + 1) + " de " + pasos.length;
+  }
+  document.getElementById("sig").addEventListener("click", function () {
+    marcar(n < pasos.length - 1 ? n + 1 : 0);
+  });
+  document.getElementById("reiniciar").addEventListener("click", function () { marcar(0); });
+  marcar(0);
+})();
+</script>
+</body>
+</html>
